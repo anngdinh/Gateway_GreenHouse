@@ -4,13 +4,14 @@ import time
 import  sys
 from  Adafruit_IO import  MQTTClient
 
-AIO_FEED_ID = ""
-AIO_USERNAME = ""
-AIO_KEY = ""
+AIO_FEED_ID = ['demo.led', 'demo.pump', 'demo.update']
+AIO_USERNAME = "an_ngdinh"
+AIO_KEY = "aio_XEHl42fHnGvADmMAVSsPGxYh5evT"
 
 def  connected(client):
     print("Ket noi thanh cong...")
-    client.subscribe(AIO_FEED_ID)
+    for feed in AIO_FEED_ID:
+        client.subscribe(feed)
 
 def  subscribe(client , userdata , mid , granted_qos):
     print("Subcribe thanh cong...")
@@ -23,13 +24,13 @@ def  message(client , feed_id , payload):
     print("Nhan du lieu: " + payload)
     ser.write((str(payload) + "#").encode())
 
-# client = MQTTClient(AIO_USERNAME , AIO_KEY)
-# client.on_connect = connected
-# client.on_disconnect = disconnected
-# client.on_message = message
-# client.on_subscribe = subscribe
-# client.connect()
-# client.loop_background()
+client = MQTTClient(AIO_USERNAME , AIO_KEY)
+client.on_connect = connected
+client.on_disconnect = disconnected
+client.on_message = message
+client.on_subscribe = subscribe
+client.connect()
+client.loop_background()
 
 def getPort():
     ports = serial.tools.list_ports.comports()
@@ -41,9 +42,10 @@ def getPort():
         if "USB Serial Device" in strPort:
             splitPort = strPort.split(" ")
             commPort = (splitPort[0])
+            print(commPort)
     return commPort
 
-ser = serial.Serial( port=getPort(), baudrate=115200)
+ser = serial.Serial( port="COM11", baudrate=115200)
 
 mess = ""
 def processData(data):
@@ -52,19 +54,23 @@ def processData(data):
     splitData = data.split(":")
     print(splitData)
     if splitData[1] == "TEMP":
-        client.publish("bbc-temp", splitData[2])
+        client.publish("demo.temp", splitData[2])
 
 mess = ""
 def readSerial():
     bytesToRead = ser.inWaiting()
     if (bytesToRead > 0):
         global mess
-        mess = ser.read(bytesToRead).decode("UTF-8")
-        start = mess.find("!")
-        end = mess.find("#")
-        print(mess)
-            # processData(mess[start:end + 1])
+        mess = mess + ser.read(bytesToRead).decode("UTF-8")
+        while ("#" in mess) and ("!" in mess):
+            start = mess.find("!")
+            end = mess.find("#")
+            processData(mess[start:end + 1])
+            if (end == len(mess)):
+                mess = ""
+            else:
+                mess = mess[end+1:]
 
 while True:
     readSerial()
-    # time.sleep(1)
+    time.sleep(1)
