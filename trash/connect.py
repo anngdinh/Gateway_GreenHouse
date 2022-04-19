@@ -1,14 +1,15 @@
-import requests
-import json
+import schedule
+import time
+ 
+def job():
+   print("I'm working...")
 
-headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-url="https://io.adafruit.com/api/v2/an_ngdinh/feeds/demo.led/data"
-data={
-    "x-aio-key": "aio_fFre76W77mjdTKM2ZYiG4ly1GsOn",
-    "datum": {
-        "value": "ON"
-    }
-}
+schedule.every(2).seconds.do(job)
 
-x=requests.post(url,data=json.dumps(data),headers=headers)
-print(x.text)
+def change():
+    schedule.clear()
+    # schedule.every(1).seconds.do(job)
+while 1:
+    change()
+    schedule.run_pending()
+    time.sleep(1)

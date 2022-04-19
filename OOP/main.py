@@ -1,12 +1,10 @@
-from pydoc import cli
 import serial.tools.list_ports
-import random
 import time
 import  sys
 from  Adafruit_IO import  MQTTClient
 from Device import Device
-from Notification import Notification
 from FeedData import FeedData
+import schedule
 
 AIO_FEED_ID = ['demo.led', 'demo.pump', 'demo.update'] # a feed to know when the limit, time auto control change
 AIO_USERNAME = "an_ngdinh"
@@ -15,7 +13,7 @@ AIO_KEY = "aio_fFre76W77mjdTKM2ZYiG4ly1GsOn"
 led_Info = {
     "headers": {'Content-type': 'application/json', 'Accept': 'text/plain'},
     "api_post": "https://io.adafruit.com/api/v2/an_ngdinh/feeds/demo.led/data",
-    "api_device": "https://iot-do-an-api.herokuapp.com/device/Light",
+    "api_device": "https://iot-do-an-api.herokuapp.com/device/Led",
     "api_feed": "https://io.adafruit.com/api/v2/an_ngdinh/feeds/demo.led",
     "key": AIO_KEY
 }
@@ -66,10 +64,24 @@ def message(client , feed_id , payload):
     elif feed_id == "demo.pump":
         ser.write(("PUMP_" + str(payload) + "#").encode())
     elif feed_id == "demo.update":
-        led.update()
-        pump.update()
-        temp.update()
-        humi.update()
+        # schedule.clear()
+        if str(payload) == "10":
+            schedule.clear('Pump')
+            pump.update()
+        elif str(payload) == "20":
+            schedule.clear('Led')
+            led.update()
+        elif str(payload) == "30":
+            temp.update()
+        elif str(payload) == "40":
+            humi.update()
+        else:
+            schedule.clear()
+            led.update()
+            pump.update()
+            temp.update()
+            humi.update()
+        print(schedule.get_jobs())
 
 client = MQTTClient(AIO_USERNAME , AIO_KEY)
 client.on_connect = connected
@@ -108,7 +120,6 @@ def processData(data):
     elif splitData[1] == "HUMI":
         client.publish("demo.humi", splitData[2])
         humi.checkLimit(int(splitData[2]))
-        
 
 def readSerial():
     bytesToRead = ser.inWaiting()
@@ -124,14 +135,12 @@ def readSerial():
             else:
                 mess = mess[end+1:]
 
-
-
-
-
 def main():
     
+    print(schedule.get_jobs())
     while True:
         readSerial()
+        schedule.run_pending()
         time.sleep(1)
 
 if __name__ == "__main__":

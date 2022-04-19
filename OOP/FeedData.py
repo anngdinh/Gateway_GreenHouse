@@ -1,4 +1,3 @@
-from unicodedata import name
 import requests
 import datetime
 from Notification import Notification
@@ -29,8 +28,8 @@ class FeedData:
         if self.autoControl:
             value = int(value)
             if value < self.lowerLimit:
-                Notification.push(self.name + " is lower than " + str(self.lowerLimit) + " " + self.unit)
+                Notification.push(self.name.upper() + " is " + str(value) + self.unit +  " lower than " + str(self.lowerLimit) + self.unit)
             elif value > self.upperLimit:
-                Notification.push(self.name + " is higher than " + str(self.lowerLimit) + " " + self.unit)
+                Notification.push(self.name.upper() + " is " + str(value) + self.unit + " higher than " + str(self.upperLimit) + self.unit)
 
 
