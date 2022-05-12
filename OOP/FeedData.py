@@ -1,5 +1,4 @@
 import requests
-import datetime
 from Notification import Notification
 
 class FeedData:
