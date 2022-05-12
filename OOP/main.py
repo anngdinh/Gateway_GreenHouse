@@ -5,10 +5,11 @@ from  Adafruit_IO import  MQTTClient
 from Device import Device
 from FeedData import FeedData
 import schedule
+import config
 
 AIO_FEED_ID = ['demo.led', 'demo.pump', 'demo.update'] # a feed to know when the limit, time auto control change
 AIO_USERNAME = "an_ngdinh"
-AIO_KEY = "aio_fFre76W77mjdTKM2ZYiG4ly1GsOn"
+AIO_KEY = config.AIO_KEY
 
 led_Info = {
     "headers": {'Content-type': 'application/json', 'Accept': 'text/plain'},
